@@ -59,10 +59,65 @@ public class Kon extends JavaPlugin implements Listener {
         saddleKey = new NamespacedKey(this, "saddle_uuid");
         entityTypeKey = new NamespacedKey(this, "entity_type");
         Objects.requireNonNull(getCommand("kon")).setExecutor((sender, command, label, args) -> {
+            // Handle console-accessible commands first
+            if (args.length >= 1) {
+                if (args[0].equalsIgnoreCase("give") && args.length == 3) {
+                    if (!sender.hasPermission("kon.admin")) {
+                        sender.sendMessage(ChatColor.RED + "Nie masz uprawnień do dawania przedmiotów innym graczom!");
+                        return true;
+                    }
+                    Player target = Bukkit.getPlayer(args[1]);
+                    if (target == null) {
+                        sender.sendMessage(ChatColor.RED + "Gracz " + args[1] + " nie jest online!");
+                        return true;
+                    }
+                    EntityType entityType;
+                    String entityName;
+                    switch (args[2].toLowerCase()) {
+                        case "horse":
+                            entityType = EntityType.HORSE;
+                            entityName = "Koń";
+                            break;
+                        case "donkey":
+                            entityType = EntityType.DONKEY;
+                            entityName = "Osioł";
+                            break;
+                        case "camel":
+                            entityType = EntityType.CAMEL;
+                            entityName = "Wielbłąd";
+                            break;
+                        default:
+                            sender.sendMessage(ChatColor.RED + "Nieprawidłowy typ: horse, donkey, camel");
+                            return true;
+                    }
+                    if (!animalEnabled.getOrDefault(entityType, false)) {
+                        sender.sendMessage(ChatColor.RED + "Ten typ zwierzęcia jest wyłączony w konfiguracji!");
+                        return true;
+                    }
+                    ItemStack item = createAnimalItem(entityType, entityName);
+                    target.getInventory().addItem(item);
+                    sender.sendMessage(ChatColor.GREEN + "Dałeś graczowi " + target.getName() + " przedmiot: " + entityName);
+                    target.sendMessage(ChatColor.GREEN + "Otrzymałeś przedmiot do przywołania " + getEntityName(entityType) + "!");
+                    return true;
+                }
+                
+                if (args[0].equalsIgnoreCase("reload")) {
+                    if (!sender.hasPermission("kon.admin")) {
+                        sender.sendMessage(ChatColor.RED + "Nie masz uprawnień do przeładowania konfiguracji!");
+                        return true;
+                    }
+                    loadConfig();
+                    sender.sendMessage(ChatColor.GREEN + "Konfiguracja została przeładowana!");
+                    return true;
+                }
+            }
+            
+            // Player-only commands
             if (!(sender instanceof Player player)) {
                 sender.sendMessage(ChatColor.RED + "Tylko gracze mogą używać tej komendy!");
                 return true;
             }
+            
             if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
                 player.sendMessage(ChatColor.GOLD + "=== Pomoc Kon ===");
                 player.sendMessage(ChatColor.YELLOW + "/kon help - Wyświetla tę pomoc");
@@ -74,45 +129,6 @@ public class Kon extends JavaPlugin implements Listener {
             }
             if (!player.hasPermission("kon.use")) {
                 player.sendMessage(ChatColor.RED + "Nie masz uprawnień do używania tej komendy!");
-                return true;
-            }
-            if (args[0].equalsIgnoreCase("give") && args.length == 3) {
-                if (!player.hasPermission("kon.admin")) {
-                    player.sendMessage(ChatColor.RED + "Nie masz uprawnień do dawania przedmiotów innym graczom!");
-                    return true;
-                }
-                Player target = Bukkit.getPlayer(args[1]);
-                if (target == null) {
-                    player.sendMessage(ChatColor.RED + "Gracz " + args[1] + " nie jest online!");
-                    return true;
-                }
-                EntityType entityType;
-                String entityName;
-                switch (args[2].toLowerCase()) {
-                    case "horse":
-                        entityType = EntityType.HORSE;
-                        entityName = "Koń";
-                        break;
-                    case "donkey":
-                        entityType = EntityType.DONKEY;
-                        entityName = "Osioł";
-                        break;
-                    case "camel":
-                        entityType = EntityType.CAMEL;
-                        entityName = "Wielbłąd";
-                        break;
-                    default:
-                        player.sendMessage(ChatColor.RED + "Nieprawidłowy typ: horse, donkey, camel");
-                        return true;
-                }
-                if (!animalEnabled.getOrDefault(entityType, false)) {
-                    player.sendMessage(ChatColor.RED + "Ten typ zwierzęcia jest wyłączony w konfiguracji!");
-                    return true;
-                }
-                ItemStack item = createAnimalItem(entityType, entityName);
-                target.getInventory().addItem(item);
-                player.sendMessage(ChatColor.GREEN + "Dałeś graczowi " + target.getName() + " przedmiot: " + entityName);
-                target.sendMessage(ChatColor.GREEN + "Otrzymałeś przedmiot do przywołania " + getEntityName(entityType) + "!");
                 return true;
             }
             if (args[0].equalsIgnoreCase("get") && args.length == 2) {
@@ -144,15 +160,7 @@ public class Kon extends JavaPlugin implements Listener {
                 player.sendMessage(ChatColor.GREEN + "Otrzymałeś przedmiot do przywołania " + getEntityName(entityType) + "!");
                 return true;
             }
-            if (args[0].equalsIgnoreCase("reload")) {
-                if (!player.hasPermission("kon.admin")) {
-                    player.sendMessage(ChatColor.RED + "Nie masz uprawnień do przeładowania konfiguracji!");
-                    return true;
-                }
-                loadConfig();
-                player.sendMessage(ChatColor.GREEN + "Konfiguracja została przeładowana!");
-                return true;
-            }
+
             player.sendMessage(ChatColor.RED + "Nieznana komenda. Użyj /kon help");
             return true;
         });
