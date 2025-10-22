@@ -1,11 +1,11 @@
 name: Kon
-version: ${project.version}
+version: "1.0"
 main: me.misz.kon.Kon
-api-version: 1.21
+api-version: "1.21"
 commands:
   kon:
     description: Przywołaj swojego konia jak w Wiedźminie 3
-    usage: /<command> [help|get|reload]
+    usage: /<command> [help|get <typ>|give <gracz> <typ>|reload]
     permission: kon.use
 permissions:
   kon.use:

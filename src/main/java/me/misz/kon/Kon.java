@@ -66,14 +66,53 @@ public class Kon extends JavaPlugin implements Listener {
             if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
                 player.sendMessage(ChatColor.GOLD + "=== Pomoc Kon ===");
                 player.sendMessage(ChatColor.YELLOW + "/kon help - Wyświetla tę pomoc");
-                player.sendMessage(ChatColor.YELLOW + "/kon get horse - Daje przedmiot do przywołania konia");
-                player.sendMessage(ChatColor.YELLOW + "/kon get donkey - Daje przedmiot do przywołania osła");
-                player.sendMessage(ChatColor.YELLOW + "/kon get camel - Daje przedmiot do przywołania wielbłąda");
+                player.sendMessage(ChatColor.YELLOW + "/kon get <typ> - Daje przedmiot do przywołania zwierzęcia");
+                player.sendMessage(ChatColor.YELLOW + "/kon give <gracz> <typ> - Daje przedmiot innemu graczowi");
                 player.sendMessage(ChatColor.YELLOW + "/kon reload - Przeładowuje konfigurację");
+                player.sendMessage(ChatColor.GRAY + "Dostępne typy: horse, donkey, camel");
                 return true;
             }
             if (!player.hasPermission("kon.use")) {
                 player.sendMessage(ChatColor.RED + "Nie masz uprawnień do używania tej komendy!");
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("give") && args.length == 3) {
+                if (!player.hasPermission("kon.admin")) {
+                    player.sendMessage(ChatColor.RED + "Nie masz uprawnień do dawania przedmiotów innym graczom!");
+                    return true;
+                }
+                Player target = Bukkit.getPlayer(args[1]);
+                if (target == null) {
+                    player.sendMessage(ChatColor.RED + "Gracz " + args[1] + " nie jest online!");
+                    return true;
+                }
+                EntityType entityType;
+                String entityName;
+                switch (args[2].toLowerCase()) {
+                    case "horse":
+                        entityType = EntityType.HORSE;
+                        entityName = "Koń";
+                        break;
+                    case "donkey":
+                        entityType = EntityType.DONKEY;
+                        entityName = "Osioł";
+                        break;
+                    case "camel":
+                        entityType = EntityType.CAMEL;
+                        entityName = "Wielbłąd";
+                        break;
+                    default:
+                        player.sendMessage(ChatColor.RED + "Nieprawidłowy typ: horse, donkey, camel");
+                        return true;
+                }
+                if (!animalEnabled.getOrDefault(entityType, false)) {
+                    player.sendMessage(ChatColor.RED + "Ten typ zwierzęcia jest wyłączony w konfiguracji!");
+                    return true;
+                }
+                ItemStack item = createAnimalItem(entityType, entityName);
+                target.getInventory().addItem(item);
+                player.sendMessage(ChatColor.GREEN + "Dałeś graczowi " + target.getName() + " przedmiot: " + entityName);
+                target.sendMessage(ChatColor.GREEN + "Otrzymałeś przedmiot do przywołania " + getEntityName(entityType) + "!");
                 return true;
             }
             if (args[0].equalsIgnoreCase("get") && args.length == 2) {
@@ -100,46 +139,9 @@ public class Kon extends JavaPlugin implements Listener {
                     player.sendMessage(ChatColor.RED + "Ten typ zwierzęcia jest wyłączony w konfiguracji!");
                     return true;
                 }
-                double defaultHealth = animalDefaultHealth.getOrDefault(entityType, 26.0);
-                double defaultSpeed = animalDefaultSpeed.getOrDefault(entityType, 0.25);
-                double defaultJump = animalDefaultJump.getOrDefault(entityType, 0.7);
-                boolean hasChest = entityType == EntityType.DONKEY;
-
-                Material summonItem = switch (entityType) {
-                    case HORSE -> Material.CYAN_DYE;
-                    case DONKEY -> Material.ORANGE_DYE;
-                    case CAMEL -> Material.CLOCK;
-                    default -> Material.CLOCK;
-                };
-                ItemStack item = new ItemStack(summonItem);
-                ItemMeta meta = item.getItemMeta();
-                UUID saddleUUID = UUID.randomUUID();
-                meta.getPersistentDataContainer().set(saddleKey, PersistentDataType.STRING, saddleUUID.toString());
-                meta.getPersistentDataContainer().set(entityTypeKey, PersistentDataType.STRING, entityType.name());
-
-                String displayName = switch (entityType) {
-                    case HORSE -> ChatColor.GOLD + "Koń";
-                    case DONKEY -> ChatColor.GOLD + "Osioł";
-                    case CAMEL -> ChatColor.GOLD + "Wielbłąd";
-                    default -> ChatColor.GOLD + "Zwierzę";
-                };
-                meta.setDisplayName(displayName);
-
-                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-                List<String> lore = new ArrayList<>();
-                lore.add(ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego " + entityName.toLowerCase());
-                lore.add(ChatColor.YELLOW + "Szybkość: " + String.format("%.2f", defaultSpeed));
-                lore.add(ChatColor.YELLOW + "Zdrowie: " + String.format("%.1f", defaultHealth));
-                if (entityType == EntityType.HORSE) {
-                    lore.add(ChatColor.YELLOW + "Skok: " + String.format("%.2f", defaultJump));
-                }
-                if (hasChest) {
-                    lore.add(ChatColor.YELLOW + "Skrzynia: Tak");
-                }
-                meta.setLore(lore);
-                item.setItemMeta(meta);
+                ItemStack item = createAnimalItem(entityType, entityName);
                 player.getInventory().addItem(item);
-                player.sendMessage(ChatColor.GREEN + "Otrzymałeś przedmiot do przywołania " + entityName.toLowerCase() + "!");
+                player.sendMessage(ChatColor.GREEN + "Otrzymałeś przedmiot do przywołania " + getEntityName(entityType) + "!");
                 return true;
             }
             if (args[0].equalsIgnoreCase("reload")) {
@@ -553,6 +555,43 @@ public class Kon extends JavaPlugin implements Listener {
             case CAMEL -> "wielbłąda";
             default -> "zwierzęcia";
         };
+    }
+
+    private ItemStack createAnimalItem(EntityType entityType, String entityName) {
+        double defaultHealth = animalDefaultHealth.getOrDefault(entityType, 26.0);
+        double defaultSpeed = animalDefaultSpeed.getOrDefault(entityType, 0.25);
+        double defaultJump = animalDefaultJump.getOrDefault(entityType, 0.7);
+        boolean hasChest = entityType == EntityType.DONKEY;
+
+        Material summonItem = switch (entityType) {
+            case HORSE -> Material.CYAN_DYE;
+            case DONKEY -> Material.ORANGE_DYE;
+            case CAMEL -> Material.CLOCK;
+            default -> Material.CLOCK;
+        };
+        ItemStack item = new ItemStack(summonItem);
+        ItemMeta meta = item.getItemMeta();
+        UUID saddleUUID = UUID.randomUUID();
+        meta.getPersistentDataContainer().set(saddleKey, PersistentDataType.STRING, saddleUUID.toString());
+        meta.getPersistentDataContainer().set(entityTypeKey, PersistentDataType.STRING, entityType.name());
+
+        meta.setDisplayName(ChatColor.GOLD + entityName);
+
+        meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+        List<String> lore = new ArrayList<>();
+        // use genitive form from getEntityName to match the validLore checks (e.g. "konia", "osła", "wielbłąda")
+        lore.add(ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego " + getEntityName(entityType));
+        lore.add(ChatColor.YELLOW + "Szybkość: " + String.format("%.2f", defaultSpeed));
+        lore.add(ChatColor.YELLOW + "Zdrowie: " + String.format("%.1f", defaultHealth));
+        if (entityType == EntityType.HORSE) {
+            lore.add(ChatColor.YELLOW + "Skok: " + String.format("%.2f", defaultJump));
+        }
+        if (hasChest) {
+            lore.add(ChatColor.YELLOW + "Skrzynia: Tak");
+        }
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
     }
 
     private void openUpgradeGUI(Player player, UUID saddleUUID, EntityType entityType) {
