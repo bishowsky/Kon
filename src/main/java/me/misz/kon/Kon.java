@@ -60,20 +60,20 @@ public class Kon extends JavaPlugin implements Listener {
         entityTypeKey = new NamespacedKey(this, "entity_type");
         Objects.requireNonNull(getCommand("kon")).setExecutor((sender, command, label, args) -> {
             if (!(sender instanceof Player player)) {
-                sender.sendMessage(ChatColor.RED + "Only players can use this command!");
+                sender.sendMessage(ChatColor.RED + "Tylko gracze mogą używać tej komendy!");
                 return true;
             }
             if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
-                player.sendMessage(ChatColor.GOLD + "=== Kon Help ===");
-                player.sendMessage(ChatColor.YELLOW + "/kon help - Shows this help");
-                player.sendMessage(ChatColor.YELLOW + "/kon get horse - Gives an item to summon a horse");
-                player.sendMessage(ChatColor.YELLOW + "/kon get donkey - Gives an item to summon a donkey");
-                player.sendMessage(ChatColor.YELLOW + "/kon get camel - Gives an item to summon a camel");
-                player.sendMessage(ChatColor.YELLOW + "/kon reload - Reloads the configuration");
+                player.sendMessage(ChatColor.GOLD + "=== Pomoc Kon ===");
+                player.sendMessage(ChatColor.YELLOW + "/kon help - Wyświetla tę pomoc");
+                player.sendMessage(ChatColor.YELLOW + "/kon get horse - Daje przedmiot do przywołania konia");
+                player.sendMessage(ChatColor.YELLOW + "/kon get donkey - Daje przedmiot do przywołania osła");
+                player.sendMessage(ChatColor.YELLOW + "/kon get camel - Daje przedmiot do przywołania wielbłąda");
+                player.sendMessage(ChatColor.YELLOW + "/kon reload - Przeładowuje konfigurację");
                 return true;
             }
             if (!player.hasPermission("kon.use")) {
-                player.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
+                player.sendMessage(ChatColor.RED + "Nie masz uprawnień do używania tej komendy!");
                 return true;
             }
             if (args[0].equalsIgnoreCase("get") && args.length == 2) {
@@ -82,22 +82,22 @@ public class Kon extends JavaPlugin implements Listener {
                 switch (args[1].toLowerCase()) {
                     case "horse":
                         entityType = EntityType.HORSE;
-                        entityName = "Horse";
+                        entityName = "Koń";
                         break;
                     case "donkey":
                         entityType = EntityType.DONKEY;
-                        entityName = "Donkey";
+                        entityName = "Osioł";
                         break;
                     case "camel":
                         entityType = EntityType.CAMEL;
-                        entityName = "Camel";
+                        entityName = "Wielbłąd";
                         break;
                     default:
-                        player.sendMessage(ChatColor.RED + "Invalid type: horse, donkey, camel");
+                        player.sendMessage(ChatColor.RED + "Nieprawidłowy typ: horse, donkey, camel");
                         return true;
                 }
                 if (!animalEnabled.getOrDefault(entityType, false)) {
-                    player.sendMessage(ChatColor.RED + "This animal type is disabled in config!");
+                    player.sendMessage(ChatColor.RED + "Ten typ zwierzęcia jest wyłączony w konfiguracji!");
                     return true;
                 }
                 double defaultHealth = animalDefaultHealth.getOrDefault(entityType, 26.0);
@@ -118,40 +118,40 @@ public class Kon extends JavaPlugin implements Listener {
                 meta.getPersistentDataContainer().set(entityTypeKey, PersistentDataType.STRING, entityType.name());
 
                 String displayName = switch (entityType) {
-                    case HORSE -> ChatColor.GOLD + "Horse";
-                    case DONKEY -> ChatColor.GOLD + "Donkey";
-                    case CAMEL -> ChatColor.GOLD + "Camel";
-                    default -> ChatColor.GOLD + "Animal";
+                    case HORSE -> ChatColor.GOLD + "Koń";
+                    case DONKEY -> ChatColor.GOLD + "Osioł";
+                    case CAMEL -> ChatColor.GOLD + "Wielbłąd";
+                    default -> ChatColor.GOLD + "Zwierzę";
                 };
                 meta.setDisplayName(displayName);
 
                 meta.addEnchant(Enchantment.UNBREAKING, 1, true);
                 List<String> lore = new ArrayList<>();
-                lore.add(ChatColor.GRAY + "Right-click to summon or dismiss your " + entityName.toLowerCase());
-                lore.add(ChatColor.YELLOW + "Speed: " + String.format("%.2f", defaultSpeed));
-                lore.add(ChatColor.YELLOW + "Health: " + String.format("%.1f", defaultHealth));
+                lore.add(ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego " + entityName.toLowerCase());
+                lore.add(ChatColor.YELLOW + "Szybkość: " + String.format("%.2f", defaultSpeed));
+                lore.add(ChatColor.YELLOW + "Zdrowie: " + String.format("%.1f", defaultHealth));
                 if (entityType == EntityType.HORSE) {
-                    lore.add(ChatColor.YELLOW + "Jump: " + String.format("%.2f", defaultJump));
+                    lore.add(ChatColor.YELLOW + "Skok: " + String.format("%.2f", defaultJump));
                 }
                 if (hasChest) {
-                    lore.add(ChatColor.YELLOW + "Chest: Yes");
+                    lore.add(ChatColor.YELLOW + "Skrzynia: Tak");
                 }
                 meta.setLore(lore);
                 item.setItemMeta(meta);
                 player.getInventory().addItem(item);
-                player.sendMessage(ChatColor.GREEN + "You received an item to summon a " + entityName.toLowerCase() + "!");
+                player.sendMessage(ChatColor.GREEN + "Otrzymałeś przedmiot do przywołania " + entityName.toLowerCase() + "!");
                 return true;
             }
             if (args[0].equalsIgnoreCase("reload")) {
                 if (!player.hasPermission("kon.admin")) {
-                    player.sendMessage(ChatColor.RED + "You don't have permission to reload the config!");
+                    player.sendMessage(ChatColor.RED + "Nie masz uprawnień do przeładowania konfiguracji!");
                     return true;
                 }
                 loadConfig();
-                player.sendMessage(ChatColor.GREEN + "Configuration reloaded!");
+                player.sendMessage(ChatColor.GREEN + "Konfiguracja została przeładowana!");
                 return true;
             }
-            player.sendMessage(ChatColor.RED + "Unknown command. Use /kon help");
+            player.sendMessage(ChatColor.RED + "Nieznana komenda. Użyj /kon help");
             return true;
         });
         new BukkitRunnable() {
@@ -220,7 +220,7 @@ public class Kon extends JavaPlugin implements Listener {
         try {
             config.save(new File(getDataFolder(), "config.yml"));
         } catch (IOException e) {
-            getLogger().severe("Error saving config.yml: " + e.getMessage());
+            getLogger().severe("Błąd podczas zapisywania config.yml: " + e.getMessage());
         }
     }
 
@@ -231,14 +231,14 @@ public class Kon extends JavaPlugin implements Listener {
             try {
                 horseFile.createNewFile();
             } catch (IOException e) {
-                getLogger().severe("Cannot create horses.yml: " + e.getMessage());
+                getLogger().severe("Nie można utworzyć horses.yml: " + e.getMessage());
             }
         }
         horseData = YamlConfiguration.loadConfiguration(horseFile);
         try {
             horseData.load(horseFile);
         } catch (Exception e) {
-            getLogger().warning("Error loading horses.yml: " + e.getMessage());
+            getLogger().warning("Błąd podczas ładowania horses.yml: " + e.getMessage());
         }
     }
 
@@ -310,7 +310,7 @@ public class Kon extends JavaPlugin implements Listener {
         try {
             horseData.save(horseFile);
         } catch (IOException e) {
-            getLogger().severe("Error saving horses.yml: " + e.getMessage());
+            getLogger().severe("Błąd podczas zapisywania horses.yml: " + e.getMessage());
         }
     }
 
@@ -326,10 +326,10 @@ public class Kon extends JavaPlugin implements Listener {
         LivingEntity entity = (LivingEntity) loc.getWorld().spawnEntity(loc, entityType);
 
         String defaultName = switch (entityType) {
-            case HORSE -> ChatColor.GOLD + "Horse";
-            case DONKEY -> ChatColor.GOLD + "Donkey";
-            case CAMEL -> ChatColor.GOLD + "Camel";
-            default -> ChatColor.GOLD + "Animal";
+            case HORSE -> ChatColor.GOLD + "Koń";
+            case DONKEY -> ChatColor.GOLD + "Osioł";
+            case CAMEL -> ChatColor.GOLD + "Wielbłąd";
+            default -> ChatColor.GOLD + "Zwierzę";
         };
         entity.setCustomName(horseData.getString(path + "name", defaultName));
 
@@ -430,9 +430,9 @@ public class Kon extends JavaPlugin implements Listener {
         ItemMeta meta = item.getItemMeta();
         if (meta == null || !meta.hasDisplayName() || !meta.hasLore()) return;
         List<String> validLore = Arrays.asList(
-            ChatColor.GRAY + "Right-click to summon or dismiss your horse",
-            ChatColor.GRAY + "Right-click to summon or dismiss your donkey",
-            ChatColor.GRAY + "Right-click to summon or dismiss your camel"
+            ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego konia",
+            ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego osła",
+            ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego wielbłąda"
         );
         if (meta.getLore().stream().noneMatch(validLore::contains)) return;
 
@@ -454,14 +454,14 @@ public class Kon extends JavaPlugin implements Listener {
         EntityType entityType = EntityType.valueOf(horseData.getString(path + "entity_type", "HORSE"));
         String entityName = getEntityName(entityType);
         List<String> lore = new ArrayList<>();
-        lore.add(ChatColor.GRAY + "Right-click to summon or dismiss your " + entityName.toLowerCase());
-        lore.add(ChatColor.YELLOW + "Speed: " + String.format("%.2f", speed));
-        lore.add(ChatColor.YELLOW + "Health: " + String.format("%.1f", maxHealth));
+        lore.add(ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego " + entityName);
+        lore.add(ChatColor.YELLOW + "Szybkość: " + String.format("%.2f", speed));
+        lore.add(ChatColor.YELLOW + "Zdrowie: " + String.format("%.1f", maxHealth));
         if (entityType == EntityType.HORSE) {
-            lore.add(ChatColor.YELLOW + "Jump: " + String.format("%.2f", jump));
+            lore.add(ChatColor.YELLOW + "Skok: " + String.format("%.2f", jump));
         }
         if (hasChest) {
-            lore.add(ChatColor.YELLOW + "Chest: Yes");
+            lore.add(ChatColor.YELLOW + "Skrzynia: Tak");
         }
         meta.setLore(lore);
         item.setItemMeta(meta);
@@ -473,7 +473,7 @@ public class Kon extends JavaPlugin implements Listener {
             if (remaining > 0) {
                 long minutes = remaining / 60;
                 long seconds = remaining % 60;
-                player.sendMessage(ChatColor.RED + "Your " + entityName + " is resting... try again in " +
+                player.sendMessage(ChatColor.RED + "Twój " + entityName + " odpoczywa... spróbuj ponownie za " +
                         ChatColor.YELLOW + minutes + "m " + seconds + "s" + ChatColor.RED + ".");
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
                 return;
@@ -491,7 +491,7 @@ public class Kon extends JavaPlugin implements Listener {
                     needsSave.add(saddleUUID);
                     saveHorseData(saddleUUID, entity);
                     entity.remove();
-                    player.sendMessage(ChatColor.YELLOW + "Dismissed your " + entityName);
+                    player.sendMessage(ChatColor.YELLOW + "Odesłałeś swojego " + entityName);
                     player.playSound(player.getLocation(), Sound.ENTITY_HORSE_SADDLE, 1.0f, 1.0f);
                 }
             }
@@ -542,21 +542,21 @@ public class Kon extends JavaPlugin implements Listener {
         }
         summonedEntities.put(saddleUUID, entity);
         player.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, entity.getLocation(), 10, 0.5, 0.5, 0.5);
-        player.sendMessage(ChatColor.GREEN + "Summoned your " + entityName);
+        player.sendMessage(ChatColor.GREEN + "Przywołałeś swojego " + entityName);
         player.playSound(player.getLocation(), Sound.ENTITY_HORSE_AMBIENT, 1.0f, 1.0f);
     }
 
     private String getEntityName(EntityType type) {
         return switch (type) {
-            case HORSE -> "horse";
-            case DONKEY -> "donkey";
-            case CAMEL -> "camel";
-            default -> "animal";
+            case HORSE -> "konia";
+            case DONKEY -> "osła";
+            case CAMEL -> "wielbłąda";
+            default -> "zwierzęcia";
         };
     }
 
     private void openUpgradeGUI(Player player, UUID saddleUUID, EntityType entityType) {
-        Inventory inv = Bukkit.createInventory(null, 9, "Upgrade Animal");
+        Inventory inv = Bukkit.createInventory(null, 9, "Ulepszanie Zwierzęcia");
         LivingEntity entity = summonedEntities.get(saddleUUID);
         if (entity == null) return;
 
@@ -566,10 +566,10 @@ public class Kon extends JavaPlugin implements Listener {
 
         ItemStack speedItem = new ItemStack(Material.FEATHER);
         ItemMeta speedMeta = speedItem.getItemMeta();
-        speedMeta.setDisplayName(ChatColor.YELLOW + "Upgrade Speed (+ " + animalSpeedIncrement.getOrDefault(entityType, 0.01) + ")");
+        speedMeta.setDisplayName(ChatColor.YELLOW + "Ulepsz Szybkość (+ " + animalSpeedIncrement.getOrDefault(entityType, 0.01) + ")");
         speedMeta.setLore(List.of(
-                ChatColor.GRAY + "Cost: " + animalSpeedCost.getOrDefault(entityType, 5) + " XP levels",
-                ChatColor.GRAY + "Current: " + String.format("%.2f", currentSpeed)
+                ChatColor.GRAY + "Koszt: " + animalSpeedCost.getOrDefault(entityType, 5) + " poziomów XP",
+                ChatColor.GRAY + "Obecna: " + String.format("%.2f", currentSpeed)
         ));
         speedItem.setItemMeta(speedMeta);
         inv.setItem(2, speedItem);
@@ -577,10 +577,10 @@ public class Kon extends JavaPlugin implements Listener {
         if (entityType == EntityType.HORSE) {
             ItemStack jumpItem = new ItemStack(Material.RABBIT_FOOT);
             ItemMeta jumpMeta = jumpItem.getItemMeta();
-            jumpMeta.setDisplayName(ChatColor.YELLOW + "Upgrade Jump (+ " + animalJumpIncrement.getOrDefault(entityType, 0.05) + ")");
+            jumpMeta.setDisplayName(ChatColor.YELLOW + "Ulepsz Skok (+ " + animalJumpIncrement.getOrDefault(entityType, 0.05) + ")");
             jumpMeta.setLore(List.of(
-                    ChatColor.GRAY + "Cost: " + animalJumpCost.getOrDefault(entityType, 5) + " XP levels",
-                    ChatColor.GRAY + "Current: " + String.format("%.2f", currentJump)
+                    ChatColor.GRAY + "Koszt: " + animalJumpCost.getOrDefault(entityType, 5) + " poziomów XP",
+                    ChatColor.GRAY + "Obecny: " + String.format("%.2f", currentJump)
             ));
             jumpItem.setItemMeta(jumpMeta);
             inv.setItem(4, jumpItem);
@@ -588,17 +588,17 @@ public class Kon extends JavaPlugin implements Listener {
 
         ItemStack healthItem = new ItemStack(Material.APPLE);
         ItemMeta healthMeta = healthItem.getItemMeta();
-        healthMeta.setDisplayName(ChatColor.YELLOW + "Upgrade Health (+ " + animalHealthIncrement.getOrDefault(entityType, 2.0) + ")");
+        healthMeta.setDisplayName(ChatColor.YELLOW + "Ulepsz Zdrowie (+ " + animalHealthIncrement.getOrDefault(entityType, 2.0) + ")");
         healthMeta.setLore(List.of(
-                ChatColor.GRAY + "Cost: " + animalHealthCost.getOrDefault(entityType, 5) + " XP levels",
-                ChatColor.GRAY + "Current: " + String.format("%.1f", currentMaxHealth)
+                ChatColor.GRAY + "Koszt: " + animalHealthCost.getOrDefault(entityType, 5) + " poziomów XP",
+                ChatColor.GRAY + "Obecne: " + String.format("%.1f", currentMaxHealth)
         ));
         healthItem.setItemMeta(healthMeta);
         inv.setItem(6, healthItem);
 
         ItemStack dismissItem = new ItemStack(Material.BARRIER);
         ItemMeta dismissMeta = dismissItem.getItemMeta();
-        dismissMeta.setDisplayName(ChatColor.RED + "Dismiss Animal");
+        dismissMeta.setDisplayName(ChatColor.RED + "Odeślij Zwierzę");
         dismissItem.setItemMeta(dismissMeta);
         inv.setItem(8, dismissItem);
 
@@ -607,7 +607,7 @@ public class Kon extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().equals("Upgrade Animal")) return;
+        if (!event.getView().getTitle().equals("Ulepszanie Zwierzęcia")) return;
         event.setCancelled(true);
         if (event.getCurrentItem() == null) return;
         Player player = (Player) event.getWhoClicked();
@@ -660,7 +660,7 @@ public class Kon extends JavaPlugin implements Listener {
             needsSave.add(saddleUUID);
             saveHorseData(saddleUUID, entity);
             entity.remove();
-            player.sendMessage(ChatColor.YELLOW + "Dismissed your " + entityName);
+            player.sendMessage(ChatColor.YELLOW + "Odesłałeś swojego " + entityName);
             player.playSound(player.getLocation(), Sound.ENTITY_HORSE_SADDLE, 1.0f, 1.0f);
             player.closeInventory();
         }
@@ -673,24 +673,24 @@ public class Kon extends JavaPlugin implements Listener {
         double increment = incrementMap.getOrDefault(entityType, 0.01);
         double max = maxMap.getOrDefault(entityType, 0.35);
         if (player.getLevel() < cost) {
-            player.sendMessage(ChatColor.RED + "You need at least " + cost + " XP levels!");
+            player.sendMessage(ChatColor.RED + "Potrzebujesz co najmniej " + cost + " poziomów XP!");
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
             return;
         }
         double currentValue = entity.getAttribute(attribute).getBaseValue();
         if (currentValue >= max) {
-            player.sendMessage(ChatColor.RED + "Maximum value reached!");
+            player.sendMessage(ChatColor.RED + "Osiągnięto maksymalną wartość!");
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
             return;
         }
         entity.getAttribute(attribute).setBaseValue(currentValue + increment);
         String statName = switch (stat) {
-            case "speed" -> "Speed";
-            case "jump" -> "Jump";
-            case "health" -> "Health";
+            case "speed" -> "Szybkość";
+            case "jump" -> "Skok";
+            case "health" -> "Zdrowie";
             default -> stat;
         };
-        player.sendMessage(ChatColor.GREEN + statName + " of your " + entityName + " upgraded!");
+        player.sendMessage(ChatColor.GREEN + statName + " twojego " + entityName + " została ulepszona!");
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
         player.setLevel(player.getLevel() - cost);
         needsSave.add(saddleUUID);
@@ -708,14 +708,14 @@ public class Kon extends JavaPlugin implements Listener {
         boolean hasChest = horseData.getBoolean(path + "chest.present", false);
         String entityName = getEntityName(entityType);
         List<String> lore = new ArrayList<>();
-        lore.add(ChatColor.GRAY + "Right-click to summon or dismiss your " + entityName);
-        lore.add(ChatColor.YELLOW + "Speed: " + String.format("%.2f", speed));
-        lore.add(ChatColor.YELLOW + "Health: " + String.format("%.1f", maxHealth));
+        lore.add(ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego " + entityName);
+        lore.add(ChatColor.YELLOW + "Szybkość: " + String.format("%.2f", speed));
+        lore.add(ChatColor.YELLOW + "Zdrowie: " + String.format("%.1f", maxHealth));
         if (entityType == EntityType.HORSE) {
-            lore.add(ChatColor.YELLOW + "Jump: " + String.format("%.2f", jump));
+            lore.add(ChatColor.YELLOW + "Skok: " + String.format("%.2f", jump));
         }
         if (hasChest) {
-            lore.add(ChatColor.YELLOW + "Chest: Yes");
+            lore.add(ChatColor.YELLOW + "Skrzynia: Tak");
         }
         meta.setLore(lore);
         item.setItemMeta(meta);
@@ -733,9 +733,9 @@ public class Kon extends JavaPlugin implements Listener {
         ItemMeta meta = first.getItemMeta();
         if (meta == null || !meta.hasLore()) return;
         List<String> validLore = Arrays.asList(
-            ChatColor.GRAY + "Right-click to summon or dismiss your horse",
-            ChatColor.GRAY + "Right-click to summon or dismiss your donkey",
-            ChatColor.GRAY + "Right-click to summon or dismiss your camel"
+            ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego konia",
+            ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego osła",
+            ChatColor.GRAY + "Kliknij prawym przyciskiem, aby przywołać lub odesłać swojego wielbłąda"
         );
         if (meta.getLore().stream().noneMatch(validLore::contains)) return;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -787,8 +787,8 @@ public class Kon extends JavaPlugin implements Listener {
             summonedEntities.remove(saddleUUID);
             deathCooldowns.put(saddleUUID, System.currentTimeMillis() + animalDeathCooldown.getOrDefault(entityType, 60L * 1000));
             if (owner != null) {
-                owner.sendMessage(ChatColor.RED + "Your " + entityName + " died! You can summon again in "
-                        + ChatColor.YELLOW + (animalDeathCooldown.getOrDefault(entityType, 60L) / 60000) + " minutes" + ChatColor.RED + ".");
+                owner.sendMessage(ChatColor.RED + "Twój " + entityName + " zginął! Możesz go przywołać ponownie za "
+                        + ChatColor.YELLOW + (animalDeathCooldown.getOrDefault(entityType, 60L) / 60000) + " minut" + ChatColor.RED + ".");
             }
 
             if (entity instanceof AbstractHorse horse) {
@@ -823,7 +823,7 @@ public class Kon extends JavaPlugin implements Listener {
             try {
                 horseData.save(horseFile);
             } catch (IOException e) {
-                getLogger().warning("cant save horse.yml after death: " + e.getMessage());
+                getLogger().warning("nie można zapisać horse.yml po śmierci: " + e.getMessage());
             }
             needsSave.remove(saddleUUID);
         }

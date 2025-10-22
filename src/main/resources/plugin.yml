@@ -4,13 +4,13 @@ main: me.misz.kon.Kon
 api-version: 1.21
 commands:
   kon:
-    description: Call your horse like in the witcher 3
+    description: Przywołaj swojego konia jak w Wiedźminie 3
     usage: /<command> [help|get|reload]
     permission: kon.use
 permissions:
   kon.use:
-    description: let you use /kon get & /kon help
+    description: pozwala używać /kon get i /kon help
     default: op
   kon.admin:
-    description: let you use /kon reload
+    description: pozwala używać /kon reload
     default: op

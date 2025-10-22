@@ -1,13 +1,13 @@
 animals:
   horse:
-    enabled: true # false if you want to disable
+    enabled: true # false jeśli chcesz wyłączyć
     default_health: 26.0
     default_speed: 0.25
     default_jump: 0.7
-    death_cooldown: 60000 # in ms
+    death_cooldown: 60000 # w milisekundach
     speed_increment: 0.01
     speed_max: 0.35
-    speed_cost: 5 # in minecraft player lvl
+    speed_cost: 5 # w poziomach gracza
     health_increment: 2.0
     health_max: 40.0
     health_cost: 5
